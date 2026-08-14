@@ -1,0 +1,5 @@
+opencv-python==5.0.0.93
+black
+flake8
+isort
+mypy
