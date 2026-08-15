@@ -26,6 +26,7 @@ def main() -> None:
         hand_landmarker.close()
         webcam.close()
         frame_display.close()
+        print("Resources released. Exiting the program.")
 
 
 if __name__ == "__main__":
