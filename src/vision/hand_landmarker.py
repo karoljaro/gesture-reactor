@@ -40,6 +40,18 @@ class HandLandmarker:
 
             yield frame
 
+    def draw(self, frame: MatLike, result: HandLandmarkerResult | None) -> MatLike:
+        if result is None:
+            return frame
+
+        for hand in result.hand_landmarks:
+            for landmark in hand:
+                x = int(landmark.x * frame.shape[1])
+                y = int(landmark.y * frame.shape[0])
+                cv2.circle(frame, (x, y), 5, (0, 255, 0), -1)
+
+        return frame
+
     def close(self) -> None:
         self._landmarker.close()
 
