@@ -21,10 +21,13 @@ class FrameDisplay:
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 return True
 
-            return cv2.getWindowProperty(
-                self._window_name,
-                cv2.WND_PROP_VISIBLE,
-            ) < 1
+            return (
+                cv2.getWindowProperty(
+                    self._window_name,
+                    cv2.WND_PROP_VISIBLE,
+                )
+                < 1
+            )
         except cv2.error:
             return True
 
