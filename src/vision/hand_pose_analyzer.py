@@ -2,11 +2,21 @@ import numpy as np
 from mediapipe.tasks.python.vision import HandLandmarkerResult
 from typing import Literal
 
-FingerName = Literal["index", "middle", "ring", "pinky"]
-FingerPoint = Literal["pip", "dip"]
+FingerName = Literal["thumb", "index", "middle", "ring", "pinky"]
+FingerPoint = Literal["pip", "dip", "mcp", "ip"]
 FingerState = Literal["folded", "extended"]
 
 FINGER_ANGLE_THRESHOLDS: dict[FingerName, dict[FingerPoint, dict[FingerState, float]]] = {
+    "thumb": {
+        "mcp": {
+            "folded": 158.0,
+            "extended": 162.0,
+        },
+        "ip": {
+            "folded": 145.0,
+            "extended": 155.0,
+        },
+    },
     "index": {
         "pip": {
             "folded": 105.0,
@@ -53,7 +63,7 @@ FINGER_ANGLE_THRESHOLDS: dict[FingerName, dict[FingerPoint, dict[FingerState, fl
 class HandPoseAnalyzer:
     def __init__(self) -> None:
         self._FINGER_LANDMARKS: dict[FingerName, tuple[int, int, int, int]] = {
-            # "thumb": (1, 2, 3, 4),
+            "thumb": (1, 2, 3, 4),
             "index": (5, 6, 7, 8),
             "middle": (9, 10, 11, 12),
             "ring": (13, 14, 15, 16),
@@ -70,30 +80,64 @@ class HandPoseAnalyzer:
         finger_angles: dict[FingerName, str] = {}
 
         for finger, landmarks in self._FINGER_LANDMARKS.items():
-            pip_angle = self._calculate_angle(
-                landmarks[0],
-                landmarks[1],
-                landmarks[2],
-                latest_result,
-            )
+            if finger == "thumb":
+                mcp_angle = self._calculate_angle(
+                    landmarks[0], landmarks[1], landmarks[2], latest_result
+                )
+                ip_angle = self._calculate_angle(
+                    landmarks[1], landmarks[2], landmarks[3], latest_result
+                )
 
+                if mcp_angle is None or ip_angle is None:
+                    return None
+
+                finger_angles[finger] = self._classify_thumb(
+                    mcp_angle,
+                    ip_angle,
+                )
+                continue
+
+            pip_angle = self._calculate_angle(
+                landmarks[0], landmarks[1], landmarks[2], latest_result
+            )
             dip_angle = self._calculate_angle(
-                landmarks[1],
-                landmarks[2],
-                landmarks[3],
-                latest_result,
+                landmarks[1], landmarks[2], landmarks[3], latest_result
             )
 
             if pip_angle is None or dip_angle is None:
                 return None
 
-            finger_angles[finger] = (
-                self._classify_finger(finger, pip_angle, dip_angle)
+            finger_angles[finger] = self._classify_finger(
+                finger,
+                pip_angle,
+                dip_angle,
             )
 
+        print(f"Finger angles: {finger_angles}")
         return finger_angles
 
-    def _classify_finger(self, finger: FingerName, pip_angle: float, dip_angle: float) -> Literal["EXTENDED", "PARTIAL", "FOLDED"]:
+    def _classify_thumb(
+        self, mcp_angle: float, ip_angle: float
+    ) -> Literal["EXTENDED", "PARTIAL", "FOLDED"]:
+        thumb_thresholds = FINGER_ANGLE_THRESHOLDS["thumb"]
+
+        if mcp_angle <= thumb_thresholds["mcp"]["folded"]:
+            return "FOLDED"
+
+        if mcp_angle >= thumb_thresholds["mcp"]["extended"]:
+            return "EXTENDED"
+
+        if ip_angle <= thumb_thresholds["ip"]["folded"]:
+            return "FOLDED"
+
+        if ip_angle >= thumb_thresholds["ip"]["extended"]:
+            return "EXTENDED"
+
+        return "PARTIAL"
+
+    def _classify_finger(
+        self, finger: FingerName, pip_angle: float, dip_angle: float
+    ) -> Literal["EXTENDED", "PARTIAL", "FOLDED"]:
         finger_thresholds = FINGER_ANGLE_THRESHOLDS[finger]
 
         if pip_angle <= finger_thresholds["pip"]["folded"]:
