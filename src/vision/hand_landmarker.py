@@ -58,15 +58,13 @@ class HandLandmarker:
     def latest_result(self) -> HandLandmarkerResult | None:
         return self._latest_result
 
-    def detect(self, stream: Iterable[MatLike]) -> Iterable[MatLike]:
-        for frame in stream:
+    def detect(self, stream: Iterable[tuple[MatLike, float]]) -> Iterable[MatLike]:
+        for frame, timestamp in stream:
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
             mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
 
-            timestamp_ms = int(cv2.getTickCount() / cv2.getTickFrequency() * 1000)
-
-            self._landmarker.detect_async(mp_image, timestamp_ms)
+            self._landmarker.detect_async(mp_image, timestamp)
 
             yield frame
 
