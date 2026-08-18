@@ -1,0 +1,64 @@
+from typing import Literal
+
+Gesture = Literal["FIST", "OPEN_PALM", "POINTING", "PEACE"]
+FingerName = Literal["thumb", "index", "middle", "ring", "pinky"]
+FingerState = Literal["EXTENDED", "PARTIAL", "FOLDED"]
+ClassifierResult = Gesture | Literal["UNKNOWN"]
+
+FINGER_ORDER: tuple[FingerName, ...] = ("thumb", "index", "middle", "ring", "pinky")
+
+GESTURE_PATTERNS: dict[Gesture, dict[FingerName, FingerState]] = {
+    "FIST": {
+        "thumb": "FOLDED",
+        "index": "FOLDED",
+        "middle": "FOLDED",
+        "ring": "FOLDED",
+        "pinky": "FOLDED",
+    },
+    "OPEN_PALM": {
+        "thumb": "EXTENDED",
+        "index": "EXTENDED",
+        "middle": "EXTENDED",
+        "ring": "EXTENDED",
+        "pinky": "EXTENDED",
+    },
+    "POINTING": {
+        "thumb": "FOLDED",
+        "index": "EXTENDED",
+        "middle": "FOLDED",
+        "ring": "FOLDED",
+        "pinky": "FOLDED",
+    },
+    "PEACE": {
+        "thumb": "FOLDED",
+        "index": "EXTENDED",
+        "middle": "EXTENDED",
+        "ring": "FOLDED",
+        "pinky": "FOLDED",
+    },
+}
+
+GESTURE_LOOKUP: dict[tuple[FingerState, ...], Gesture] = {
+    tuple(pattern[finger] for finger in FINGER_ORDER): gesture
+    for gesture, pattern in GESTURE_PATTERNS.items()
+}
+
+
+class GestureClassifier:
+    def classify_gesture(
+        self, fingers: dict[FingerName, FingerState] | None
+    ) -> ClassifierResult | None:
+
+        if fingers is None:
+            return None
+
+        return GESTURE_LOOKUP.get(
+            (
+                fingers["thumb"],
+                fingers["index"],
+                fingers["middle"],
+                fingers["ring"],
+                fingers["pinky"],
+            ),
+            "UNKNOWN",
+        )

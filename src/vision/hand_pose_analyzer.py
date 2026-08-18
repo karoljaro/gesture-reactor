@@ -73,11 +73,11 @@ class HandPoseAnalyzer:
     def analyze(
         self,
         latest_result: HandLandmarkerResult | None,
-    ) -> dict[FingerName, str] | None:
+    ) -> dict[FingerName, Literal["EXTENDED", "PARTIAL", "FOLDED"]] | None:
         if latest_result is None or not latest_result.hand_world_landmarks:
             return None
 
-        finger_angles: dict[FingerName, str] = {}
+        finger_angles: dict[FingerName, Literal["EXTENDED", "PARTIAL", "FOLDED"]] = {}
 
         for finger, landmarks in self._FINGER_LANDMARKS.items():
             if finger == "thumb":
