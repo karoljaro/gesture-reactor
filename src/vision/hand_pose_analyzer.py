@@ -113,7 +113,6 @@ class HandPoseAnalyzer:
                 dip_angle,
             )
 
-        print(f"Finger angles: {finger_angles}")
         return finger_angles
 
     def _classify_thumb(

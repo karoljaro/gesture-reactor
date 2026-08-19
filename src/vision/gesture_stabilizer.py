@@ -17,22 +17,28 @@ class GestureStabilizer:
 
         if gesture == "UNKNOWN":
             self._unknown_count += 1
+
             if self._unknown_count > self.MAX_UNKNOWN_COUNT:
                 self._reset_candidate()
+
+            return None
+
+        self._unknown_count = 0
+
+        if gesture == self._candidate_gesture:
+            self._candidate_count += 1
+
+            if (
+                self._candidate_count >= self.MIN_REQUIRED_STREAK_COUNT
+                and gesture != self._last_emitted_gesture
+            ):
+                self._last_emitted_gesture = gesture
+                return gesture
+
         else:
-            self._unknown_count = 0
-            if gesture == self._candidate_gesture:
-                self._candidate_count += 1
-                if (
-                    self._candidate_count >= self.MIN_REQUIRED_STREAK_COUNT
-                    and gesture != self._last_emitted_gesture
-                ):
-                    self._last_emitted_gesture = gesture
-                    return self._candidate_gesture
-                else:
-                    self._reset_candidate()
-                    self._candidate_gesture = gesture
-                    self._candidate_count = 1
+            self._reset_candidate()
+            self._candidate_gesture = gesture
+            self._candidate_count = 1
 
         return None
 
