@@ -7,6 +7,7 @@ from display import FrameDisplay
 from vision.hand_landmarker import HandLandmarker
 from vision.hand_pose_analyzer import HandPoseAnalyzer
 from vision.gesture_classifier import GestureClassifier
+from vision.gesture_stabilizer import GestureStabilizer
 
 
 def main() -> None:
@@ -16,6 +17,7 @@ def main() -> None:
     hand_landmarker = HandLandmarker()
     hand_pose_analyzer = HandPoseAnalyzer()
     gesture_classifier = GestureClassifier()
+    gesture_stabilizer = GestureStabilizer()
 
     try:
         camera_stream = webcam.execute()
@@ -35,7 +37,9 @@ def main() -> None:
 
                 gesture = gesture_classifier.classify_gesture(result)
 
-                print(result)
+                stabilized_gesture = gesture_stabilizer.update(gesture)
+
+                print(stabilized_gesture)
                 print(gesture)
 
                 yield drawn_frame
