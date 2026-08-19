@@ -8,6 +8,7 @@ from vision.hand_landmarker import HandLandmarker
 from vision.hand_pose_analyzer import HandPoseAnalyzer
 from vision.gesture_classifier import GestureClassifier
 from vision.gesture_stabilizer import GestureStabilizer
+from reaction.meme_reactor import MemeReactor
 
 
 def main() -> None:
@@ -18,6 +19,7 @@ def main() -> None:
     hand_pose_analyzer = HandPoseAnalyzer()
     gesture_classifier = GestureClassifier()
     gesture_stabilizer = GestureStabilizer()
+    meme_reactor = MemeReactor()
 
     try:
         camera_stream = webcam.execute()
@@ -39,8 +41,10 @@ def main() -> None:
 
                 stabilized_gesture = gesture_stabilizer.update(gesture)
 
-                print(stabilized_gesture)
-                print(gesture)
+                if stabilized_gesture is not None:
+                    print(f"Stabilized gesture: {stabilized_gesture}")
+                    meme_path = meme_reactor.react(stabilized_gesture)
+                    print(f"Selected meme path: {meme_path}")
 
                 yield drawn_frame
 

@@ -1,8 +1,8 @@
-from vision.gesture_classifier import Gesture
 import random
 from pathlib import Path
+from vision.gesture_classifier import ClassifierResult
 
-GESTURE_MEMES: dict[Gesture, tuple[str, ...]] = {
+GESTURE_MEMES: dict[ClassifierResult, tuple[str, ...]] = {
     "FIST": (
         "assets/memes/fist/fist.jpg",
     ),
@@ -20,8 +20,8 @@ GESTURE_MEMES: dict[Gesture, tuple[str, ...]] = {
 
 class MemeReactor:
     @staticmethod
-    def react(gesture: Gesture) -> Path | None:
-        if gesture not in GESTURE_MEMES:
+    def react(gesture: ClassifierResult | None) -> Path | None:
+        if gesture is None or gesture not in GESTURE_MEMES:
             return None
 
         meme_paths = GESTURE_MEMES[gesture]
