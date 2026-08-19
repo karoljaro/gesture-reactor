@@ -1,5 +1,4 @@
 from .gesture_classifier import ClassifierResult
-from collections.abc import Iterable
 
 
 class GestureStabilizer:
