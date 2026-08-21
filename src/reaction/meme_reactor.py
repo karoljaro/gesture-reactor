@@ -16,7 +16,7 @@ GESTURE_MEMES: dict[Gesture, tuple[str, ...]] = {
 
 class MemeReactor:
     @staticmethod
-    def react(
+    def process(
         stream: Iterable[tuple[MatLike, Gesture | None]],
     ) -> Iterable[tuple[MatLike, Path | None]]:
         for frame, gesture in stream:

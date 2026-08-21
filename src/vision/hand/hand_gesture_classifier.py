@@ -40,20 +40,20 @@ GESTURE_LOOKUP: dict[tuple[FingerState, ...], Gesture] = {
 
 
 class HandGestureClassifier:
-    def classify_gesture(
-        self, fingers: dict[FingerName, FingerState] | None
+    def classify(
+        self, finger_states: dict[FingerName, FingerState] | None
     ) -> ClassifierResult | None:
 
-        if fingers is None:
+        if finger_states is None:
             return None
 
         return GESTURE_LOOKUP.get(
             (
-                fingers["thumb"],
-                fingers["index"],
-                fingers["middle"],
-                fingers["ring"],
-                fingers["pinky"],
+                finger_states["thumb"],
+                finger_states["index"],
+                finger_states["middle"],
+                finger_states["ring"],
+                finger_states["pinky"],
             ),
             "UNKNOWN",
         )

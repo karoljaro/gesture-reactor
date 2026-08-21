@@ -8,7 +8,7 @@ from vision.processor import VisionProcessor
 
 
 def main() -> None:
-    webcam = Camera()
+    camera = Camera()
     vision_processor = VisionProcessor()
     frame_display = FrameDisplay()
     hand_landmark_renderer = HandLandmarkRenderer()
@@ -17,17 +17,17 @@ def main() -> None:
     hand_reaction_pipeline = HandReactionPipeline()
 
     try:
-        camera_stream = webcam.execute()
+        camera_stream = camera.stream()
         processed_stream = vision_processor.process(camera_stream)
         hand_reaction_stream = hand_reaction_pipeline.process(processed_stream)
-        rendered_hand_stream = hand_landmark_renderer.render(hand_reaction_stream)
-        meme_reaction_stream = meme_reactor.react(rendered_hand_stream)
-        meme_display_stream = meme_display.show(meme_reaction_stream)
+        rendered_hand_stream = hand_landmark_renderer.process(hand_reaction_stream)
+        meme_reaction_stream = meme_reactor.process(rendered_hand_stream)
+        meme_display_stream = meme_display.process(meme_reaction_stream)
         frame_display.show(meme_display_stream)
 
     finally:
         hand_reaction_pipeline.close()
-        webcam.close()
+        camera.close()
         meme_display.close()
         frame_display.close()
         print("Resources released. Exiting the program.")

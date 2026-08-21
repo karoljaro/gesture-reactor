@@ -38,7 +38,7 @@ HAND_CONNECTIONS: tuple[tuple[int, int], ...] = (
 
 
 class HandLandmarkRenderer:
-    def render(
+    def process(
         self,
         stream: Iterable[tuple[MatLike, HandLandmarkerResult | None, Gesture | None]],
     ) -> Iterable[tuple[MatLike, Gesture | None]]:

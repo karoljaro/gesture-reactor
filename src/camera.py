@@ -9,7 +9,7 @@ class Camera:
         self._device_index = device_index
         self._capture = cv2.VideoCapture(device_index)
 
-    def execute(self) -> Iterator[tuple[MatLike, int]]:
+    def stream(self) -> Iterator[tuple[MatLike, int]]:
         if not self._capture.isOpened():
             raise RuntimeError(f"Failed to open camera with device index {self._device_index}")
 

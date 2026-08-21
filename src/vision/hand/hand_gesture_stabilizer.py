@@ -11,7 +11,7 @@ class HandGestureStabilizer:
         self._candidate_count: int = 0
         self._last_emitted_gesture: Gesture | None = None
 
-    def update(self, gesture: ClassifierResult | None) -> Gesture | None:
+    def stabilize(self, gesture: ClassifierResult | None) -> Gesture | None:
         if gesture is None:
             return None
 

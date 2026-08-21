@@ -23,11 +23,11 @@ class HandReactionPipeline:
         for frame, timestamp in stream:
             detected_frame = self._hand_landmarker.detect(frame, timestamp)
             detection_result = self._hand_landmarker.latest_result
-            analyzed = self._pose_analyzer.analyze(detection_result)
-            classified = self._classifier.classify_gesture(analyzed)
-            stabilized = self._stabilizer.update(classified)
+            finger_states = self._pose_analyzer.analyze(detection_result)
+            classified_gesture = self._classifier.classify(finger_states)
+            stabilized_gesture = self._stabilizer.stabilize(classified_gesture)
 
-            yield detected_frame, detection_result, stabilized
+            yield detected_frame, detection_result, stabilized_gesture
 
     def close(self) -> None:
         self._hand_landmarker.close()

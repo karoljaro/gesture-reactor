@@ -10,7 +10,7 @@ class MemeDisplay:
         self._window_name = window_name
         self._is_open = False
 
-    def show(self, stream: Iterable[tuple[MatLike, Path | None]]) -> Iterable[MatLike]:
+    def process(self, stream: Iterable[tuple[MatLike, Path | None]]) -> Iterable[MatLike]:
         for frame, meme_path in stream:
             if meme_path is not None:
                 meme_image = cv2.imread(meme_path.as_posix())
