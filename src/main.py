@@ -28,6 +28,7 @@ def main() -> None:
     finally:
         hand_reaction_pipeline.close()
         webcam.close()
+        meme_display.close()
         frame_display.close()
         print("Resources released. Exiting the program.")
 

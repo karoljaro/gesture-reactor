@@ -7,9 +7,11 @@ from cv2.typing import MatLike
 class FrameDisplay:
     def __init__(self, window_name: str = "Webcam Feed"):
         self._window_name = window_name
+        self._is_open = False
 
     def show(self, stream: Iterable[MatLike]) -> None:
         cv2.namedWindow(self._window_name)
+        self._is_open = True
 
         for frame in stream:
             cv2.imshow(self._window_name, frame)
@@ -33,4 +35,12 @@ class FrameDisplay:
             return True
 
     def close(self) -> None:
-        cv2.destroyAllWindows()
+        if not self._is_open:
+            return
+
+        try:
+            cv2.destroyWindow(self._window_name)
+        except cv2.error:
+            pass
+        finally:
+            self._is_open = False
