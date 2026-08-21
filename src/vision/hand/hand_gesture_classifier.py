@@ -1,4 +1,4 @@
-from .types import ClassifierResult, FingerName, FingerState, Gesture
+from ..types import ClassifierResult, FingerName, FingerState, Gesture
 
 FINGER_ORDER: tuple[FingerName, ...] = ("thumb", "index", "middle", "ring", "pinky")
 
@@ -39,7 +39,7 @@ GESTURE_LOOKUP: dict[tuple[FingerState, ...], Gesture] = {
 }
 
 
-class GestureClassifier:
+class HandGestureClassifier:
     def classify_gesture(
         self, fingers: dict[FingerName, FingerState] | None
     ) -> ClassifierResult | None:

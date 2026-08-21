@@ -4,10 +4,10 @@ from collections.abc import Iterable
 from camera import Camera
 from vision.processor import VisionProcessor
 from display import FrameDisplay
-from vision.hand_landmarker import HandLandmarker
-from vision.hand_pose_analyzer import HandPoseAnalyzer
-from vision.gesture_classifier import GestureClassifier
-from vision.gesture_stabilizer import GestureStabilizer
+from vision.hand.hand_landmarker import HandLandmarker
+from vision.hand.hand_pose_analyzer import HandPoseAnalyzer
+from vision.hand.hand_gesture_classifier import HandGestureClassifier
+from vision.hand.hand_gesture_stabilizer import HandGestureStabilizer
 from reaction.meme_reactor import MemeReactor
 from meme_display import MemeDisplay
 
@@ -18,8 +18,8 @@ def main() -> None:
     frame_display = FrameDisplay()
     hand_landmarker = HandLandmarker()
     hand_pose_analyzer = HandPoseAnalyzer()
-    gesture_classifier = GestureClassifier()
-    gesture_stabilizer = GestureStabilizer()
+    gesture_classifier = HandGestureClassifier()
+    gesture_stabilizer = HandGestureStabilizer()
     meme_reactor = MemeReactor()
     meme_display = MemeDisplay()
 

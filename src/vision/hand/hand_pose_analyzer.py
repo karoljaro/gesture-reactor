@@ -3,7 +3,7 @@ from typing import Literal
 import numpy as np
 from mediapipe.tasks.python.vision import HandLandmarkerResult
 
-from .types import FingerName, FingerState
+from ..types import FingerName, FingerState
 
 FingerPoint = Literal["pip", "dip", "mcp", "ip"]
 AngleThresholdState = Literal["folded", "extended"]

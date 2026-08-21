@@ -1,7 +1,7 @@
-from .types import ClassifierResult, Gesture
+from ..types import ClassifierResult, Gesture
 
 
-class GestureStabilizer:
+class HandGestureStabilizer:
     MAX_UNKNOWN_COUNT = 1
     MIN_REQUIRED_STREAK_COUNT = 5
 
