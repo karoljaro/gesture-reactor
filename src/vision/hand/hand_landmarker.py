@@ -1,3 +1,6 @@
+from collections.abc import Iterable, Iterator
+from queue import Empty, Full, Queue
+
 import cv2
 import mediapipe as mp
 from cv2.typing import MatLike
@@ -11,7 +14,7 @@ class HandLandmarker:
         hand_landmarker_options = mp.tasks.vision.HandLandmarkerOptions
         running_mode = mp.tasks.vision.RunningMode
 
-        self._latest_result: HandLandmarkerResult | None = None
+        self._results: Queue[tuple[mp.Image, HandLandmarkerResult, int]] = Queue(maxsize=1)
 
         options = hand_landmarker_options(
             base_options=base_options(
@@ -23,23 +26,37 @@ class HandLandmarker:
 
         self._landmarker = hand_landmarker.create_from_options(options)
 
-    @property
-    def latest_result(self) -> HandLandmarkerResult | None:
-        return self._latest_result
+    def process(
+        self, stream: Iterable[tuple[MatLike, int]]
+    ) -> Iterator[tuple[MatLike, HandLandmarkerResult, int]]:
+        for frame, timestamp in stream:
+            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
 
-    def detect(self, frame: MatLike, timestamp: int) -> MatLike:
-        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            self._landmarker.detect_async(mp_image, timestamp)
 
-        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
+            try:
+                output_image, result, result_timestamp = self._results.get_nowait()
+            except Empty:
+                continue
 
-        self._landmarker.detect_async(mp_image, timestamp)
-
-        return frame
+            output_frame = cv2.cvtColor(output_image.numpy_view(), cv2.COLOR_RGB2BGR)
+            yield output_frame, result, result_timestamp
 
     def close(self) -> None:
         self._landmarker.close()
 
     def _on_result(
-        self, result: HandLandmarkerResult, _output_image: mp.Image, _timestamp_ms: int
+        self, result: HandLandmarkerResult, output_image: mp.Image, timestamp_ms: int
     ) -> None:
-        self._latest_result = result
+        packet = output_image, result, timestamp_ms
+
+        try:
+            self._results.put_nowait(packet)
+        except Full:
+            try:
+                self._results.get_nowait()
+            except Empty:
+                pass
+
+            self._results.put_nowait(packet)

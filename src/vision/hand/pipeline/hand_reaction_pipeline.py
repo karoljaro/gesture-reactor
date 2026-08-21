@@ -20,14 +20,14 @@ class HandReactionPipeline:
     def process(
         self, stream: Iterable[tuple[MatLike, int]]
     ) -> Iterable[tuple[MatLike, HandLandmarkerResult | None, Gesture | None]]:
-        for frame, timestamp in stream:
-            detected_frame = self._hand_landmarker.detect(frame, timestamp)
-            detection_result = self._hand_landmarker.latest_result
+        detection_stream = self._hand_landmarker.process(stream)
+
+        for frame, detection_result, _timestamp in detection_stream:
             finger_states = self._pose_analyzer.analyze(detection_result)
             classified_gesture = self._classifier.classify(finger_states)
             stabilized_gesture = self._stabilizer.stabilize(classified_gesture)
 
-            yield detected_frame, detection_result, stabilized_gesture
+            yield frame, detection_result, stabilized_gesture
 
     def close(self) -> None:
         self._hand_landmarker.close()
