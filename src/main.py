@@ -28,11 +28,6 @@ def main() -> None:
         processed_stream = vision_processor.process(camera_stream)
         hand_landmarker_stream = hand_landmarker.detect(processed_stream)
 
-        # landmarker_drawn_stream = (
-        #     hand_landmarker.draw(frame, hand_landmarker.latest_result)
-        #     for frame in hand_landmarker_stream
-        # )
-
         def process_and_draw_stream() -> Iterable[MatLike]:
             for frame in hand_landmarker_stream:
                 drawn_frame = hand_landmarker.draw(frame, hand_landmarker.latest_result)
