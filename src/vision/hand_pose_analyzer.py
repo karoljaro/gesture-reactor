@@ -1,12 +1,14 @@
-import numpy as np
-from mediapipe.tasks.python.vision import HandLandmarkerResult
 from typing import Literal
 
-FingerName = Literal["thumb", "index", "middle", "ring", "pinky"]
-FingerPoint = Literal["pip", "dip", "mcp", "ip"]
-FingerState = Literal["folded", "extended"]
+import numpy as np
+from mediapipe.tasks.python.vision import HandLandmarkerResult
 
-FINGER_ANGLE_THRESHOLDS: dict[FingerName, dict[FingerPoint, dict[FingerState, float]]] = {
+from .types import FingerName, FingerState
+
+FingerPoint = Literal["pip", "dip", "mcp", "ip"]
+AngleThresholdState = Literal["folded", "extended"]
+
+FINGER_ANGLE_THRESHOLDS: dict[FingerName, dict[FingerPoint, dict[AngleThresholdState, float]]] = {
     "thumb": {
         "mcp": {
             "folded": 158.0,
@@ -73,11 +75,11 @@ class HandPoseAnalyzer:
     def analyze(
         self,
         latest_result: HandLandmarkerResult | None,
-    ) -> dict[FingerName, Literal["EXTENDED", "PARTIAL", "FOLDED"]] | None:
+    ) -> dict[FingerName, FingerState] | None:
         if latest_result is None or not latest_result.hand_world_landmarks:
             return None
 
-        finger_angles: dict[FingerName, Literal["EXTENDED", "PARTIAL", "FOLDED"]] = {}
+        finger_angles: dict[FingerName, FingerState] = {}
 
         for finger, landmarks in self._FINGER_LANDMARKS.items():
             if finger == "thumb":
@@ -115,9 +117,7 @@ class HandPoseAnalyzer:
 
         return finger_angles
 
-    def _classify_thumb(
-        self, mcp_angle: float, ip_angle: float
-    ) -> Literal["EXTENDED", "PARTIAL", "FOLDED"]:
+    def _classify_thumb(self, mcp_angle: float, ip_angle: float) -> FingerState:
         thumb_thresholds = FINGER_ANGLE_THRESHOLDS["thumb"]
 
         if mcp_angle <= thumb_thresholds["mcp"]["folded"]:
@@ -136,7 +136,7 @@ class HandPoseAnalyzer:
 
     def _classify_finger(
         self, finger: FingerName, pip_angle: float, dip_angle: float
-    ) -> Literal["EXTENDED", "PARTIAL", "FOLDED"]:
+    ) -> FingerState:
         finger_thresholds = FINGER_ANGLE_THRESHOLDS[finger]
 
         if pip_angle <= finger_thresholds["pip"]["folded"]:

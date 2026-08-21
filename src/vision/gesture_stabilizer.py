@@ -1,4 +1,4 @@
-from .gesture_classifier import ClassifierResult
+from .types import ClassifierResult, Gesture
 
 
 class GestureStabilizer:
@@ -7,11 +7,11 @@ class GestureStabilizer:
 
     def __init__(self) -> None:
         self._unknown_count: int = 0
-        self._candidate_gesture: ClassifierResult | None = None
+        self._candidate_gesture: Gesture | None = None
         self._candidate_count: int = 0
-        self._last_emitted_gesture: ClassifierResult | None = None
+        self._last_emitted_gesture: Gesture | None = None
 
-    def update(self, gesture: ClassifierResult | None) -> ClassifierResult | None:
+    def update(self, gesture: ClassifierResult | None) -> Gesture | None:
         if gesture is None:
             return None
 

@@ -1,9 +1,4 @@
-from typing import Literal
-
-Gesture = Literal["FIST", "OPEN_PALM", "POINTING", "PEACE"]
-FingerName = Literal["thumb", "index", "middle", "ring", "pinky"]
-FingerState = Literal["EXTENDED", "PARTIAL", "FOLDED"]
-ClassifierResult = Gesture | Literal["UNKNOWN"]
+from .types import ClassifierResult, FingerName, FingerState, Gesture
 
 FINGER_ORDER: tuple[FingerName, ...] = ("thumb", "index", "middle", "ring", "pinky")
 
