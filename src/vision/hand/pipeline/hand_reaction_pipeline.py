@@ -1,5 +1,6 @@
 from collections.abc import Iterable
 
+import mediapipe as mp
 from cv2.typing import MatLike
 from mediapipe.tasks.python.vision import HandLandmarkerResult
 
@@ -18,7 +19,7 @@ class HandReactionPipeline:
         self._stabilizer = HandGestureStabilizer()
 
     def process(
-        self, stream: Iterable[tuple[MatLike, int]]
+        self, stream: Iterable[tuple[MatLike, mp.Image, int]]
     ) -> Iterable[tuple[MatLike, HandLandmarkerResult | None, Gesture | None]]:
         detection_stream = self._hand_landmarker.process(stream)
 
