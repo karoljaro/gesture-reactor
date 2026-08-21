@@ -1,29 +1,9 @@
-from collections.abc import Iterable
-
-from cv2.typing import MatLike
-
 from camera import Camera
-from display import FrameDisplay
-from meme_display import MemeDisplay
+from presentation.frame_display import FrameDisplay
+from presentation.meme_display import MemeDisplay
 from reaction.meme_reactor import MemeReactor
 from vision.hand.pipeline.hand_reaction_pipeline import HandReactionPipeline
 from vision.processor import VisionProcessor
-from vision.types import Gesture
-
-
-def process_reactions(
-    stream: Iterable[tuple[MatLike, Gesture | None]],
-    meme_reactor: MemeReactor,
-    meme_display: MemeDisplay,
-) -> Iterable[MatLike]:
-    for frame, stabilized_gesture in stream:
-        if stabilized_gesture is not None:
-            print(f"Stabilized gesture: {stabilized_gesture}")
-            meme_path = meme_reactor.react(stabilized_gesture)
-            meme_display.show(meme_path)
-            print(f"Selected meme path: {meme_path}")
-
-        yield frame
 
 
 def main() -> None:
@@ -38,12 +18,9 @@ def main() -> None:
         camera_stream = webcam.execute()
         processed_stream = vision_processor.process(camera_stream)
         hand_reaction_stream = hand_reaction_pipeline.process(processed_stream)
-        reaction_stream = process_reactions(
-            hand_reaction_stream,
-            meme_reactor,
-            meme_display,
-        )
-        frame_display.show(reaction_stream)
+        meme_reaction_stream = meme_reactor.react(hand_reaction_stream)
+        meme_display_stream = meme_display.show(meme_reaction_stream)
+        frame_display.show(meme_display_stream)
 
     finally:
         hand_reaction_pipeline.close()

@@ -1,6 +1,7 @@
+from collections.abc import Iterable
+
 import cv2
 from cv2.typing import MatLike
-from collections.abc import Iterable
 
 
 class FrameDisplay:
