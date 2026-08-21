@@ -9,7 +9,7 @@ class Camera:
         self._window_name = window_name
         self._capture = cv2.VideoCapture(device_index)
 
-    def execute(self) -> Iterator[tuple[MatLike, float]]:
+    def execute(self) -> Iterator[tuple[MatLike, int]]:
         if not self._capture.isOpened():
             raise RuntimeError(f"Failed to open camera with device index {self._device_index}")
 
@@ -24,7 +24,7 @@ class Camera:
         finally:
             self.close()
 
-    def _read_frame_with_timestamp(self) -> tuple[MatLike, float]:
+    def _read_frame_with_timestamp(self) -> tuple[MatLike, int]:
         success, frame = self._capture.read()
         if not success:
             raise RuntimeError("Failed to read frame from camera.")

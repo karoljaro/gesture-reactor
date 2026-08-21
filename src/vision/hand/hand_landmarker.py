@@ -1,8 +1,7 @@
 import cv2
 import mediapipe as mp
-from mediapipe.tasks.python.vision import HandLandmarkerResult
-from collections.abc import Iterable
 from cv2.typing import MatLike
+from mediapipe.tasks.python.vision import HandLandmarkerResult
 
 
 class HandLandmarker:
@@ -58,15 +57,14 @@ class HandLandmarker:
     def latest_result(self) -> HandLandmarkerResult | None:
         return self._latest_result
 
-    def detect(self, stream: Iterable[tuple[MatLike, float]]) -> Iterable[MatLike]:
-        for frame, timestamp in stream:
-            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    def detect(self, frame: MatLike, timestamp: int) -> MatLike:
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
 
-            self._landmarker.detect_async(mp_image, timestamp)
+        self._landmarker.detect_async(mp_image, timestamp)
 
-            yield frame
+        return frame
 
     def draw(self, frame: MatLike, result: HandLandmarkerResult | None) -> MatLike:
         if result is None:
