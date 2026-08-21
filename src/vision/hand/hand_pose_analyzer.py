@@ -1,6 +1,7 @@
+from math import acos, degrees, sqrt
 from typing import Literal
 
-import numpy as np
+from mediapipe.tasks.python.components.containers.landmark import Landmark
 from mediapipe.tasks.python.vision import HandLandmarkerResult
 
 from ..types import FingerName, FingerState
@@ -79,130 +80,80 @@ class HandPoseAnalyzer:
         if latest_result is None or not latest_result.hand_world_landmarks:
             return None
 
-        finger_angles: dict[FingerName, FingerState] = {}
+        hand_landmarks = latest_result.hand_world_landmarks[0]
+        finger_states: dict[FingerName, FingerState] = {}
 
         for finger, landmarks in self._FINGER_LANDMARKS.items():
             if finger == "thumb":
-                mcp_angle = self._calculate_angle(
-                    landmarks[0], landmarks[1], landmarks[2], latest_result
-                )
-                ip_angle = self._calculate_angle(
-                    landmarks[1], landmarks[2], landmarks[3], latest_result
-                )
+                primary_thresholds = FINGER_ANGLE_THRESHOLDS[finger]["mcp"]
+                secondary_thresholds = FINGER_ANGLE_THRESHOLDS[finger]["ip"]
+            else:
+                primary_thresholds = FINGER_ANGLE_THRESHOLDS[finger]["pip"]
+                secondary_thresholds = FINGER_ANGLE_THRESHOLDS[finger]["dip"]
 
-                if mcp_angle is None or ip_angle is None:
-                    return None
-
-                finger_angles[finger] = self._classify_thumb(
-                    mcp_angle,
-                    ip_angle,
-                )
-                continue
-
-            pip_angle = self._calculate_angle(
-                landmarks[0], landmarks[1], landmarks[2], latest_result
+            primary_angle = self._calculate_angle(
+                hand_landmarks[landmarks[0]],
+                hand_landmarks[landmarks[1]],
+                hand_landmarks[landmarks[2]],
             )
-            dip_angle = self._calculate_angle(
-                landmarks[1], landmarks[2], landmarks[3], latest_result
-            )
-
-            if pip_angle is None or dip_angle is None:
+            if primary_angle is None:
                 return None
 
-            finger_angles[finger] = self._classify_finger(
-                finger,
-                pip_angle,
-                dip_angle,
+            primary_state = self._classify_angle(primary_angle, primary_thresholds)
+            if primary_state is not None:
+                finger_states[finger] = primary_state
+                continue
+
+            secondary_angle = self._calculate_angle(
+                hand_landmarks[landmarks[1]],
+                hand_landmarks[landmarks[2]],
+                hand_landmarks[landmarks[3]],
             )
+            if secondary_angle is None:
+                return None
 
-        return finger_angles
+            secondary_state = self._classify_angle(secondary_angle, secondary_thresholds)
+            finger_states[finger] = secondary_state if secondary_state is not None else "PARTIAL"
 
-    def _classify_thumb(self, mcp_angle: float, ip_angle: float) -> FingerState:
-        thumb_thresholds = FINGER_ANGLE_THRESHOLDS["thumb"]
+        return finger_states
 
-        if mcp_angle <= thumb_thresholds["mcp"]["folded"]:
-            return "FOLDED"
-
-        if mcp_angle >= thumb_thresholds["mcp"]["extended"]:
-            return "EXTENDED"
-
-        if ip_angle <= thumb_thresholds["ip"]["folded"]:
-            return "FOLDED"
-
-        if ip_angle >= thumb_thresholds["ip"]["extended"]:
-            return "EXTENDED"
-
-        return "PARTIAL"
-
-    def _classify_finger(
-        self, finger: FingerName, pip_angle: float, dip_angle: float
-    ) -> FingerState:
-        finger_thresholds = FINGER_ANGLE_THRESHOLDS[finger]
-
-        if pip_angle <= finger_thresholds["pip"]["folded"]:
-            return "FOLDED"
-
-        if pip_angle >= finger_thresholds["pip"]["extended"]:
-            return "EXTENDED"
-
-        if dip_angle <= finger_thresholds["dip"]["folded"]:
-            return "FOLDED"
-
-        if dip_angle >= finger_thresholds["dip"]["extended"]:
-            return "EXTENDED"
-
-        return "PARTIAL"
-
+    @staticmethod
     def _calculate_angle(
-        self,
-        landmark1: int,
-        middle_landmark: int,
-        landmark3: int,
-        latest_result: HandLandmarkerResult | None,
+        first: Landmark,
+        middle: Landmark,
+        last: Landmark,
     ) -> float | None:
-        if latest_result is None or not latest_result.hand_world_landmarks:
+        first_x = first.x - middle.x
+        first_y = first.y - middle.y
+        first_z = first.z - middle.z
+
+        last_x = last.x - middle.x
+        last_y = last.y - middle.y
+        last_z = last.z - middle.z
+
+        dot_product = first_x * last_x + first_y * last_y + first_z * last_z
+
+        first_length = sqrt(first_x * first_x + first_y * first_y + first_z * first_z)
+        last_length = sqrt(last_x * last_x + last_y * last_y + last_z * last_z)
+        lengths_product = first_length * last_length
+
+        if lengths_product == 0.0:
             return None
 
-        landmark_1_points = np.array(
-            [
-                latest_result.hand_world_landmarks[0][landmark1].x,
-                latest_result.hand_world_landmarks[0][landmark1].y,
-                latest_result.hand_world_landmarks[0][landmark1].z,
-            ]
-        )
+        cosine = dot_product / lengths_product
+        cosine = max(-1.0, min(1.0, cosine))
 
-        middle_landmark_points = np.array(
-            [
-                latest_result.hand_world_landmarks[0][middle_landmark].x,
-                latest_result.hand_world_landmarks[0][middle_landmark].y,
-                latest_result.hand_world_landmarks[0][middle_landmark].z,
-            ]
-        )
+        return degrees(acos(cosine))
 
-        landmark_3_points = np.array(
-            [
-                latest_result.hand_world_landmarks[0][landmark3].x,
-                latest_result.hand_world_landmarks[0][landmark3].y,
-                latest_result.hand_world_landmarks[0][landmark3].z,
-            ]
-        )
+    @staticmethod
+    def _classify_angle(
+        angle: float,
+        thresholds: dict[AngleThresholdState, float],
+    ) -> FingerState | None:
+        if angle <= thresholds["folded"]:
+            return "FOLDED"
 
-        v_1_m = landmark_1_points - middle_landmark_points
-        v_m_3 = landmark_3_points - middle_landmark_points
+        if angle >= thresholds["extended"]:
+            return "EXTENDED"
 
-        dot_prod = np.dot(v_1_m, v_m_3)
-
-        norms_prod = np.linalg.norm(v_1_m) * np.linalg.norm(v_m_3)
-
-        if norms_prod == 0:
-            return None
-
-        cos_angle = dot_prod / norms_prod
-
-        cos_angle = np.clip(cos_angle, -1.0, 1.0)
-
-        angle_rad = np.arccos(cos_angle)
-
-        angle_deg = np.degrees(angle_rad)
-
-        return float(angle_deg)
+        return None
