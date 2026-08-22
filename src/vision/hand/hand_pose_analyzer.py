@@ -62,17 +62,16 @@ FINGER_ANGLE_THRESHOLDS: dict[FingerName, dict[FingerPoint, dict[AngleThresholdS
     },
 }
 
+FINGER_LANDMARKS: dict[FingerName, tuple[int, int, int, int]] = {
+    "thumb": (1, 2, 3, 4),
+    "index": (5, 6, 7, 8),
+    "middle": (9, 10, 11, 12),
+    "ring": (13, 14, 15, 16),
+    "pinky": (17, 18, 19, 20),
+}
+
 
 class HandPoseAnalyzer:
-    def __init__(self) -> None:
-        self._FINGER_LANDMARKS: dict[FingerName, tuple[int, int, int, int]] = {
-            "thumb": (1, 2, 3, 4),
-            "index": (5, 6, 7, 8),
-            "middle": (9, 10, 11, 12),
-            "ring": (13, 14, 15, 16),
-            "pinky": (17, 18, 19, 20),
-        }
-
     def analyze(
         self,
         latest_result: HandLandmarkerResult | None,
@@ -83,7 +82,7 @@ class HandPoseAnalyzer:
         hand_landmarks = latest_result.hand_world_landmarks[0]
         finger_states: dict[FingerName, FingerState] = {}
 
-        for finger, landmarks in self._FINGER_LANDMARKS.items():
+        for finger, landmarks in FINGER_LANDMARKS.items():
             if finger == "thumb":
                 primary_thresholds = FINGER_ANGLE_THRESHOLDS[finger]["mcp"]
                 secondary_thresholds = FINGER_ANGLE_THRESHOLDS[finger]["ip"]
