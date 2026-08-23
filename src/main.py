@@ -25,6 +25,9 @@ def main() -> None:
         meme_display_stream = meme_display.process(meme_reaction_stream)
         frame_display.show(meme_display_stream)
 
+    except Exception as e:
+        print(e)
+
     finally:
         hand_reaction_pipeline.close()
         camera.close()
