@@ -1,12 +1,12 @@
 from vision.async_landmark_processor import ResultCallback
-from mediapipe.tasks.python.vision import HandLandmarkerResult, HandLandmarkerOptions
+from mediapipe.tasks.python.vision import FaceLandmarkerResult, FaceLandmarkerOptions
 import mediapipe as mp
 
 
-def create_hand_landmarker_options(
-    callback: ResultCallback[HandLandmarkerResult],
-) -> HandLandmarkerOptions:
-    return HandLandmarkerOptions(
+def create_face_landmarker_options(
+    callback: ResultCallback[FaceLandmarkerResult]
+) -> FaceLandmarkerOptions:
+    return FaceLandmarkerOptions(
         base_options=mp.tasks.BaseOptions(
             model_asset_path="models/hand_landmarker.task",
         ),
