@@ -2,18 +2,25 @@ from collections.abc import Iterable
 
 import mediapipe as mp
 from cv2.typing import MatLike
-from mediapipe.tasks.python.vision import HandLandmarkerResult
+from mediapipe.tasks.python.vision import (
+    HandLandmarkerResult,
+    HandLandmarkerOptions,
+    HandLandmarker,
+)
 
 from vision.hand.hand_gesture_classifier import HandGestureClassifier
 from vision.hand.hand_gesture_stabilizer import HandGestureStabilizer
-from vision.hand.hand_landmarker import HandLandmarker
 from vision.hand.hand_pose_analyzer import HandPoseAnalyzer
 from vision.types import Gesture
+from vision.async_landmark_processor import AsyncLandmarkProcessor
+from vision.hand.hand_landmarker import create_hand_landmarker_options
 
 
 class HandReactionPipeline:
     def __init__(self) -> None:
-        self._hand_landmarker = HandLandmarker()
+        self._hand_landmarker = AsyncLandmarkProcessor[HandLandmarkerResult, HandLandmarkerOptions](
+            HandLandmarker, create_hand_landmarker_options
+        )
         self._pose_analyzer = HandPoseAnalyzer()
         self._classifier = HandGestureClassifier()
         self._stabilizer = HandGestureStabilizer()
