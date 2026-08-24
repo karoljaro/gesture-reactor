@@ -16,7 +16,7 @@ class LandmarkedInstance(Protocol):
     def detect_async(
         self,
         image: mp.Image,
-        timestamp: int,
+        timestamp_ms: int,
         image_processing_options: mp.tasks.vision.ImageProcessingOptions | None = None,
     ) -> None: ...
 
