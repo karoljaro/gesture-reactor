@@ -3,6 +3,7 @@ from typing import Protocol
 from collections.abc import Iterable, Iterator, Callable
 from cv2.typing import MatLike
 import mediapipe as mp
+from mediapipe.tasks.python.vision.core.image_processing_options import ImageProcessingOptions
 
 type ResultCallback[TResult] = Callable[
     [TResult, mp.Image, int],
@@ -17,7 +18,7 @@ class LandmarkedInstance(Protocol):
         self,
         image: mp.Image,
         timestamp_ms: int,
-        image_processing_options: mp.tasks.vision.ImageProcessingOptions | None = None,
+        image_processing_options: ImageProcessingOptions = None,
     ) -> None: ...
 
     def close(self) -> None: ...

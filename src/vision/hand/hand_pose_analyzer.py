@@ -2,7 +2,7 @@ from math import acos, degrees, sqrt
 from typing import Literal
 
 from mediapipe.tasks.python.components.containers.landmark import Landmark
-from mediapipe.tasks.python.vision import HandLandmarkerResult
+from mediapipe.tasks.python.vision.hand_landmarker import HandLandmarkerResult
 
 from ..types import FingerName, FingerState
 

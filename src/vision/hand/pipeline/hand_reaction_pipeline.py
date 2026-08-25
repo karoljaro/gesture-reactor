@@ -2,7 +2,7 @@ from collections.abc import Iterable, Iterator
 
 import mediapipe as mp
 from cv2.typing import MatLike
-from mediapipe.tasks.python.vision import (
+from mediapipe.tasks.python.vision.hand_landmarker import (
     HandLandmarkerResult,
     HandLandmarkerOptions,
     HandLandmarker,

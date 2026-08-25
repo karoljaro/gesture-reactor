@@ -2,7 +2,7 @@ from collections.abc import Iterator, Iterable
 import mediapipe as mp
 from cv2.typing import MatLike
 from vision.async_landmark_processor import AsyncLandmarkProcessor
-from mediapipe.tasks.python.vision import (
+from mediapipe.tasks.python.vision.face_landmarker import (
     FaceLandmarkerResult,
     FaceLandmarkerOptions,
     FaceLandmarker
