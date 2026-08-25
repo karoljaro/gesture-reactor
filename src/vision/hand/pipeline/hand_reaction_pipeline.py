@@ -1,4 +1,4 @@
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 
 import mediapipe as mp
 from cv2.typing import MatLike
@@ -27,7 +27,7 @@ class HandReactionPipeline:
 
     def process(
         self, stream: Iterable[tuple[MatLike, mp.Image, int]]
-    ) -> Iterable[tuple[MatLike, HandLandmarkerResult | None, Gesture | None]]:
+    ) -> Iterator[tuple[MatLike, HandLandmarkerResult | None, Gesture | None]]:
         detection_stream = self._hand_landmarker.process(stream)
 
         for frame, detection_result, _timestamp in detection_stream:
