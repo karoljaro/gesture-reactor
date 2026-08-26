@@ -1,14 +1,10 @@
 from queue import Queue, Empty, Full
 from typing import Protocol
-from collections.abc import Iterable, Iterator, Callable
-from cv2.typing import MatLike
+from collections.abc import Callable
 import mediapipe as mp
 from mediapipe.tasks.python.vision.core.image_processing_options import ImageProcessingOptions
 
-type ResultCallback[TResult] = Callable[
-    [TResult, mp.Image, int],
-    None
-]
+type ResultCallback[TResult] = Callable[[TResult, mp.Image, int], None]
 
 type LandmarkerType[TOptions] = type[LandmarkerFactory[TOptions]]
 
@@ -18,7 +14,7 @@ class LandmarkedInstance(Protocol):
         self,
         image: mp.Image,
         timestamp_ms: int,
-        image_processing_options: ImageProcessingOptions = None,
+        image_processing_options: ImageProcessingOptions | None = None,
     ) -> None: ...
 
     def close(self) -> None: ...
@@ -46,35 +42,20 @@ class AsyncLandmarkProcessor[
         options_factory: LandmarkerOptionsFactory[TLandmarkerOptions, TResult],
     ) -> None:
         self._results: Queue[tuple[TResult, int]] = Queue(maxsize=1)
-
         options = options_factory(self._on_result)
 
         self._landmarker = landmarker.create_from_options(options)
 
-    def process(
-        self, stream: Iterable[tuple[MatLike, mp.Image, int]]
-    ) -> Iterator[tuple[MatLike, TResult, int]]:
-        pending_frames: dict[int, MatLike] = {}
+    def submit(self, mp_image: mp.Image, timestamp_ms: int) -> None:
+        self._landmarker.detect_async(mp_image, timestamp_ms)
 
-        for frame, mp_image, timestamp in stream:
-            pending_frames[timestamp] = frame
-            self._landmarker.detect_async(mp_image, timestamp)
+    def try_get_result(self) -> tuple[TResult, int] | None:
+        try:
+            result, result_timestamp = self._results.get_nowait()
+        except Empty:
+            return None
 
-            try:
-                result, result_timestamp = self._results.get_nowait()
-            except Empty:
-                continue
-
-            result_frame = pending_frames.pop(result_timestamp)
-            stale_timestamps = [
-                pending_timestamp
-                for pending_timestamp in pending_frames
-                if pending_timestamp < result_timestamp
-            ]
-            for stale_timestamp in stale_timestamps:
-                del pending_frames[stale_timestamp]
-
-            yield result_frame, result, result_timestamp
+        return result, result_timestamp
 
     def close(self) -> None:
         self._landmarker.close()
