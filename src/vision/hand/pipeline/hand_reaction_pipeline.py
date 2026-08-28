@@ -1,41 +1,28 @@
-from collections.abc import Iterable, Iterator
-
-import mediapipe as mp
-from cv2.typing import MatLike
-from mediapipe.tasks.python.vision.hand_landmarker import (
-    HandLandmarkerResult,
-    HandLandmarkerOptions,
-    HandLandmarker,
-)
+from mediapipe.tasks.python.vision.hand_landmarker import HandLandmarkerResult
 
 from vision.hand.hand_gesture_classifier import HandGestureClassifier
 from vision.hand.hand_gesture_stabilizer import HandGestureStabilizer
 from vision.hand.hand_pose_analyzer import HandPoseAnalyzer
 from vision.types import Gesture
-from vision.async_landmark_processor import AsyncLandmarkProcessor
-from vision.hand.hand_landmarker import create_hand_landmarker_options
+
+from collections.abc import Callable
 
 
 class HandReactionPipeline:
-    def __init__(self) -> None:
-        self._hand_landmarker = AsyncLandmarkProcessor[HandLandmarkerResult, HandLandmarkerOptions](
-            HandLandmarker, create_hand_landmarker_options
-        )
+    def __init__(self, on_gesture: Callable[[Gesture, int], None]) -> None:
         self._pose_analyzer = HandPoseAnalyzer()
         self._classifier = HandGestureClassifier()
         self._stabilizer = HandGestureStabilizer()
+        self._on_gesture = on_gesture
 
-    def process(
-        self, stream: Iterable[tuple[MatLike, mp.Image, int]]
-    ) -> Iterator[tuple[MatLike, HandLandmarkerResult | None, Gesture | None]]:
-        detection_stream = self._hand_landmarker.process(stream)
+    def handle_result(
+        self,
+        result: HandLandmarkerResult,
+        timestamp_ms: int
+    ) -> None:
+        finger_states = self._pose_analyzer.analyze(result)
+        classified_gesture = self._classifier.classify(finger_states)
+        stabilized_gesture = self._stabilizer.stabilize(classified_gesture)
 
-        for frame, detection_result, _timestamp in detection_stream:
-            finger_states = self._pose_analyzer.analyze(detection_result)
-            classified_gesture = self._classifier.classify(finger_states)
-            stabilized_gesture = self._stabilizer.stabilize(classified_gesture)
-
-            yield frame, detection_result, stabilized_gesture
-
-    def close(self) -> None:
-        self._hand_landmarker.close()
+        if stabilized_gesture is not None:
+            self._on_gesture(stabilized_gesture, timestamp_ms)
