@@ -1,10 +1,7 @@
 import random
-from collections.abc import Iterable
-from pathlib import Path
-
-from cv2.typing import MatLike
-
+from collections.abc import Callable
 from vision.types import Gesture
+from pathlib import Path
 
 GESTURE_MEMES: dict[Gesture, tuple[str, ...]] = {
     "FIST": ("assets/memes/fist/fist.jpg",),
@@ -13,17 +10,30 @@ GESTURE_MEMES: dict[Gesture, tuple[str, ...]] = {
     "POINTING": ("assets/memes/pointing/pointing.jpg",),
 }
 
+type HandleGesture = Callable[[Path, int], None]
+
 
 class MemeReactor:
-    @staticmethod
-    def process(
-        stream: Iterable[tuple[MatLike, Gesture | None]],
-    ) -> Iterable[tuple[MatLike, Path | None]]:
-        for frame, gesture in stream:
-            if gesture is None or gesture not in GESTURE_MEMES:
-                yield frame, None
-                continue
+    def __init__(
+        self,
+        on_meme: Callable[[Path], None]
+    ) -> None:
+        self._on_meme = on_meme
 
-            meme_paths = GESTURE_MEMES[gesture]
-            selected_meme_path = random.choice(meme_paths)
-            yield frame, Path(selected_meme_path)
+    def handle_gesture(
+        self,
+        gesture: Gesture,
+        _timestamp_ms: int,
+    ) -> None:
+        meme_path = self._get_meme_path(gesture)
+
+        if meme_path is not None:
+            self._on_meme(meme_path)
+
+    def _get_meme_path(self, gesture: Gesture) -> Path | None:
+        if gesture is None or gesture not in GESTURE_MEMES:
+            return None
+
+        meme_paths = GESTURE_MEMES[gesture]
+        selected_meme_path = Path(random.choice(meme_paths))
+        return selected_meme_path
