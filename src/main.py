@@ -44,6 +44,7 @@ def main() -> None:
         camera.close()
         meme_display.close()
         frame_display.close()
+        vision_detection_pipeline.close()
         print("Resources released. Exiting the program.")
 
 
