@@ -24,7 +24,9 @@ class VisionDetectionPipeline:
     def __init__(
         self,
         on_hand_result: HandLandmarkerHandler,
-        on_face_result: FaceLandmarkerHandler
+        on_face_result: FaceLandmarkerHandler,
+        on_hand_debug: HandLandmarkerHandler | None = None,
+        on_face_debug: FaceLandmarkerHandler | None = None
     ) -> None:
         self._hand_landmarker = AsyncLandmarkProcessor[HandLandmarkerResult, HandLandmarkerOptions](
             HandLandmarker, create_hand_landmarker_options
@@ -36,6 +38,9 @@ class VisionDetectionPipeline:
 
         self._on_hand_result = on_hand_result
         self._on_face_result = on_face_result
+
+        self._on_hand_debug = on_hand_debug
+        self._on_face_debug = on_face_debug
 
     def process(
             self, stream: Iterable[tuple[MatLike, mp.Image, int]]
@@ -55,13 +60,21 @@ class VisionDetectionPipeline:
                     hand_timestamp
                 )
 
+                if self._on_hand_debug is not None:
+                    self._on_hand_debug(hand_result, hand_timestamp)
+
             if face_packet is not None:
                 face_result, face_timestamp = face_packet
+
+                self._latest_face_result = face_packet
 
                 self._on_face_result(
                     face_result,
                     face_timestamp
                 )
+
+                if self._on_face_debug is not None:
+                    self._on_face_debug(face_result, face_timestamp)
 
             yield frame
 

@@ -1,10 +1,6 @@
-from collections.abc import Iterable
-
 import cv2
 from cv2.typing import MatLike
 from mediapipe.tasks.python.vision.hand_landmarker import HandLandmarkerResult
-
-from vision.types import Gesture
 
 HAND_CONNECTIONS: tuple[tuple[int, int], ...] = (
     # Nadgarstek i kciuk
@@ -38,29 +34,31 @@ HAND_CONNECTIONS: tuple[tuple[int, int], ...] = (
 
 
 class HandLandmarkRenderer:
-    def process(
+    def draw(
         self,
-        stream: Iterable[tuple[MatLike, HandLandmarkerResult | None, Gesture | None]],
-    ) -> Iterable[tuple[MatLike, Gesture | None]]:
-        for frame, result, gesture in stream:
-            if result is not None:
-                height, width = frame.shape[:2]
+        frame: MatLike,
+        result: HandLandmarkerResult
+    ) -> MatLike | None:
+        if result is None:
+            return None
 
-                for hand in result.hand_landmarks:
-                    for start_idx, end_idx in HAND_CONNECTIONS:
-                        start_landmark = hand[start_idx]
-                        end_landmark = hand[end_idx]
+        height, width = frame.shape[:2]
 
-                        start_x = int(start_landmark.x * width)
-                        start_y = int(start_landmark.y * height)
-                        end_x = int(end_landmark.x * width)
-                        end_y = int(end_landmark.y * height)
+        for hand in result.hand_landmarks:
+            for start_idx, end_idx in HAND_CONNECTIONS:
+                start_landmark = hand[start_idx]
+                end_landmark = hand[end_idx]
 
-                        cv2.line(frame, (start_x, start_y), (end_x, end_y), (0, 255, 0), 2)
+                start_x = int(start_landmark.x * width)
+                start_y = int(start_landmark.y * height)
+                end_x = int(end_landmark.x * width)
+                end_y = int(end_landmark.y * height)
 
-                    for landmark in hand:
-                        x = int(landmark.x * width)
-                        y = int(landmark.y * height)
-                        cv2.circle(frame, (x, y), 5, (0, 255, 0), -1)
+                cv2.line(frame, (start_x, start_y), (end_x, end_y), (0, 255, 0), 2)
 
-            yield frame, gesture
+            for landmark in hand:
+                x = int(landmark.x * width)
+                y = int(landmark.y * height)
+                cv2.circle(frame, (x, y), 5, (0, 255, 0), -1)
+
+        return frame
