@@ -138,40 +138,6 @@ FrameDisplay
 
 This avoids forcing exact frame/result synchronization and keeps debug visualization separate from the actual gesture reaction logic.
 
-## Project structure
-
-```text
-src/
-├── camera.py
-├── main.py
-├── presentation/
-│   ├── frame_display.py
-│   ├── hand_landmark_renderer.py
-│   └── meme_display.py
-├── reaction/
-│   └── meme_reactor.py
-└── vision/
-    ├── async_landmark_processor.py
-    ├── processor.py
-    ├── types.py
-    ├── face/
-    │   ├── face_landmarker.py
-    │   └── pipeline/
-    │       └── face_reaction_pipeline.py
-    ├── hand/
-    │   ├── hand_landmarker.py
-    │   ├── hand_gesture_classifier.py
-    │   ├── hand_gesture_stabilizer.py
-    │   ├── hand_pose_analyzer.py
-    │   └── pipeline/
-    │       └── hand_reaction_pipeline.py
-    └── pipelines/
-        ├── vision_detection_pipeline.py
-        └── debug_render_pipeline.py
-```
-
-> The exact structure may evolve as the face-expression pipeline and additional reactions are implemented.
-
 ## Tech stack
 
 - Python 3.14
