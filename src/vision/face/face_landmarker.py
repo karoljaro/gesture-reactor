@@ -16,5 +16,7 @@ def create_face_landmarker_options(
             model_asset_path="models/face_landmarker.task",
         ),
         running_mode=VisionTaskRunningMode.LIVE_STREAM,
+        output_face_blendshapes=True,
+        num_faces=1,
         result_callback=callback,
     )
