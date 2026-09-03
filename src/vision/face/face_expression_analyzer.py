@@ -3,6 +3,9 @@ from mediapipe.tasks.python.components.containers.category import Category
 from functools import cache
 import re
 from typing import cast
+from vision.face.types.blendshape import FaceBlendshape
+
+type FaceBlendshapeScores = dict[FaceBlendshape, float]
 
 
 @cache
@@ -21,12 +24,15 @@ class FaceExpressionAnalyzer:
     def analyze(
         self,
         latest_result: FaceLandmarkerResult | None,
-    ) -> dict[str, float] | None:
+    ) -> FaceBlendshapeScores | None:
         if latest_result is None or not latest_result.face_blendshapes:
             return None
 
-        return {
-            _to_snake_case(category.category_name): category.score
-            for category in cast(list[Category], latest_result.face_blendshapes[0])
-            if category.category_name is not None
-        }
+        return cast(
+            FaceBlendshapeScores,
+            {
+                _to_snake_case(category.category_name): category.score
+                for category in cast(list[Category], latest_result.face_blendshapes[0])
+                if category.category_name is not None
+            },
+        )
