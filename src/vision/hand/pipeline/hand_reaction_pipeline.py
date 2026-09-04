@@ -13,6 +13,7 @@ class HandReactionPipeline:
         self._pose_analyzer = HandPoseAnalyzer()
         self._classifier = HandGestureClassifier()
         self._stabilizer = Stabilizer[HandLandmarkerResult]()
+        # FIX: FIX GESTURE TYPING FROM PURE LITERAL TO ENUM
         self._on_gesture = on_gesture
 
     def handle_result(
