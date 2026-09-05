@@ -25,7 +25,7 @@ class FaceReactionPipeline:
 
         stabilized = self._stabilizer.stabilize(
             classified,
-            lambda expression: expression is Expression.NEUTRAL,
+            lambda _: False,
         )
 
         if stabilized is not None:
