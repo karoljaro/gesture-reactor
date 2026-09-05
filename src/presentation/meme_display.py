@@ -4,10 +4,7 @@ import cv2
 
 
 class MemeDisplay:
-    def __init__(
-        self,
-        window_name: str = "Meme Display"
-    ) -> None:
+    def __init__(self, window_name: str = "Meme Display") -> None:
         self._window_name = window_name
         self._is_open = False
 

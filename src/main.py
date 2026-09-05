@@ -18,28 +18,20 @@ def main() -> None:
     frame_display = FrameDisplay()
     hand_landmark_renderer = HandLandmarkRenderer()
 
-    meme_reactor = MemeReactor(
-        on_meme=meme_display.show
-    )
+    meme_reactor = MemeReactor(on_meme=meme_display.show)
 
-    hand_pipeline = HandReactionPipeline(
-        on_gesture=meme_reactor.handle_gesture
-    )
+    hand_pipeline = HandReactionPipeline(on_gesture=meme_reactor.handle_gesture)
 
-    face_pipeline = FaceReactionPipeline(
-        on_expression=meme_reactor.handle_expression
-    )
+    face_pipeline = FaceReactionPipeline(on_expression=meme_reactor.handle_expression)
 
-    debug_render_pipelne = DebugRenderPipeline[
-        HandLandmarkerResult
-    ](
+    debug_render_pipelne = DebugRenderPipeline[HandLandmarkerResult](
         on_hand_draw=hand_landmark_renderer.draw
     )
 
     vision_detection_pipeline = VisionDetectionPipeline(
         hand_pipeline.handle_result,
         face_pipeline.handle_result,
-        on_hand_debug=debug_render_pipelne.handle_hand_result
+        on_hand_debug=debug_render_pipelne.handle_hand_result,
     )
 
     try:

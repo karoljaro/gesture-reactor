@@ -2,7 +2,7 @@ from vision.async_landmark_processor import ResultCallback
 
 from mediapipe.tasks.python.vision.hand_landmarker import (
     HandLandmarkerResult,
-    HandLandmarkerOptions
+    HandLandmarkerOptions,
 )
 from mediapipe.tasks.python.core.base_options import BaseOptions
 from mediapipe.tasks.python.vision.core.vision_task_running_mode import VisionTaskRunningMode

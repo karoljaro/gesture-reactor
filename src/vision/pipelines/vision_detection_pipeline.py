@@ -11,7 +11,7 @@ from vision.hand.hand_landmarker import create_hand_landmarker_options
 from mediapipe.tasks.python.vision.face_landmarker import (
     FaceLandmarkerResult,
     FaceLandmarkerOptions,
-    FaceLandmarker
+    FaceLandmarker,
 )
 from vision.face.face_landmarker import create_face_landmarker_options
 from vision.async_landmark_processor import AsyncLandmarkProcessor
@@ -26,7 +26,7 @@ class VisionDetectionPipeline:
         on_hand_result: HandLandmarkerHandler,
         on_face_result: FaceLandmarkerHandler,
         on_hand_debug: HandLandmarkerHandler | None = None,
-        on_face_debug: FaceLandmarkerHandler | None = None
+        on_face_debug: FaceLandmarkerHandler | None = None,
     ) -> None:
         self._hand_landmarker = AsyncLandmarkProcessor[HandLandmarkerResult, HandLandmarkerOptions](
             HandLandmarker, create_hand_landmarker_options
@@ -42,9 +42,7 @@ class VisionDetectionPipeline:
         self._on_hand_debug = on_hand_debug
         self._on_face_debug = on_face_debug
 
-    def process(
-            self, stream: Iterable[tuple[MatLike, mp.Image, int]]
-    ) -> Iterator[MatLike]:
+    def process(self, stream: Iterable[tuple[MatLike, mp.Image, int]]) -> Iterator[MatLike]:
         for frame, mp_image, timestamp_ms in stream:
             self._hand_landmarker.submit(mp_image, timestamp_ms)
             self._face_landmarker.submit(mp_image, timestamp_ms)
@@ -55,10 +53,7 @@ class VisionDetectionPipeline:
             if hand_packet is not None:
                 hand_result, hand_timestamp = hand_packet
 
-                self._on_hand_result(
-                    hand_result,
-                    hand_timestamp
-                )
+                self._on_hand_result(hand_result, hand_timestamp)
 
                 if self._on_hand_debug is not None:
                     self._on_hand_debug(hand_result, hand_timestamp)
@@ -68,10 +63,7 @@ class VisionDetectionPipeline:
 
                 self._latest_face_result = face_packet
 
-                self._on_face_result(
-                    face_result,
-                    face_timestamp
-                )
+                self._on_face_result(face_result, face_timestamp)
 
                 if self._on_face_debug is not None:
                     self._on_face_debug(face_result, face_timestamp)

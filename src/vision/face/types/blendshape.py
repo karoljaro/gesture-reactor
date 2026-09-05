@@ -1,21 +1,17 @@
 from typing import Literal
 
-
 type FaceBlendshape = Literal[
     "_neutral",
-
     # Brows
     "brow_down_left",
     "brow_down_right",
     "brow_inner_up",
     "brow_outer_up_left",
     "brow_outer_up_right",
-
     # Cheeks
     "cheek_puff",
     "cheek_squint_left",
     "cheek_squint_right",
-
     # Eyes
     "eye_blink_left",
     "eye_blink_right",
@@ -31,13 +27,11 @@ type FaceBlendshape = Literal[
     "eye_squint_right",
     "eye_wide_left",
     "eye_wide_right",
-
     # Jaw
     "jaw_forward",
     "jaw_left",
     "jaw_open",
     "jaw_right",
-
     # Mouth
     "mouth_close",
     "mouth_dimple_left",
@@ -62,7 +56,6 @@ type FaceBlendshape = Literal[
     "mouth_stretch_right",
     "mouth_upper_up_left",
     "mouth_upper_up_right",
-
     # Nose
     "nose_sneer_left",
     "nose_sneer_right",

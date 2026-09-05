@@ -9,11 +9,7 @@ class DebugRenderPipeline[TResult]:
         self._on_hand_draw = on_hand_draw
         self._latest_hand_result: TResult | None = None
 
-    def handle_hand_result(
-        self,
-        result: TResult,
-        _timestamp_ms: int
-    ) -> None:
+    def handle_hand_result(self, result: TResult, _timestamp_ms: int) -> None:
         self._latest_hand_result = result
 
     def process(self, stream: Iterable[MatLike]) -> Iterator[MatLike]:
@@ -22,9 +18,6 @@ class DebugRenderPipeline[TResult]:
                 yield frame
                 continue
 
-            drawn_frame = self._on_hand_draw(
-                frame,
-                self._latest_hand_result
-            )
+            drawn_frame = self._on_hand_draw(frame, self._latest_hand_result)
 
             yield drawn_frame if drawn_frame is not None else frame

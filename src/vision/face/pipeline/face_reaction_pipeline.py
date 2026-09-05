@@ -15,11 +15,7 @@ class FaceReactionPipeline:
         self._stabilizer = Stabilizer[Expression]()
         self._on_expression = on_expression
 
-    def handle_result(
-        self,
-        result: FaceLandmarkerResult,
-        timestamp_ms: int
-    ) -> None:
+    def handle_result(self, result: FaceLandmarkerResult, timestamp_ms: int) -> None:
         analized = self._expression_analyzer.analyze(result)
         classified = self._classifier.classify(analized)
 

@@ -2,14 +2,14 @@ from vision.async_landmark_processor import ResultCallback
 
 from mediapipe.tasks.python.vision.face_landmarker import (
     FaceLandmarkerResult,
-    FaceLandmarkerOptions
+    FaceLandmarkerOptions,
 )
 from mediapipe.tasks.python.core.base_options import BaseOptions
 from mediapipe.tasks.python.vision.core.vision_task_running_mode import VisionTaskRunningMode
 
 
 def create_face_landmarker_options(
-    callback: ResultCallback[FaceLandmarkerResult]
+    callback: ResultCallback[FaceLandmarkerResult],
 ) -> FaceLandmarkerOptions:
     return FaceLandmarkerOptions(
         base_options=BaseOptions(
