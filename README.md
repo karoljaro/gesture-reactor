@@ -1,156 +1,89 @@
 # Gesture Reactor
 
-Gesture Reactor is a real-time computer vision side project that reacts to hand gestures and facial input from a webcam.
+Gesture Reactor is a real-time computer vision project that reacts to hand gestures and facial expressions detected from a webcam by displaying matching memes.
 
-The current version recognizes selected hand gestures and displays a matching meme, while face detection is already integrated as a separate asynchronous vision branch.
+The application uses MediaPipe Tasks for hand and face tracking, OpenCV for webcam input and display, and a small custom classification layer that turns raw landmark data into recognizable gestures and expressions.
 
-The project is primarily focused on learning and experimenting with real-time vision pipelines, MediaPipe Tasks, OpenCV, asynchronous processing, gesture classification, and clean separation between detection, interpretation, reaction, and presentation.
+## Version
 
-## Current version
+**v1.0.0**
 
-**v0.2.0**
+This version marks the first complete version of the project.
 
-### What works
+## What it does
 
-- Real-time webcam capture
-- Dedicated camera capture thread
-- Latest-frame strategy to avoid frame backlog
-- Shared frame preprocessing for MediaPipe
-- Asynchronous MediaPipe Hand Landmarker
-- Asynchronous MediaPipe Face Landmarker
-- Parallel hand and face detection flow
-- Generic `AsyncLandmarkProcessor`
-- Hand pose analysis based on 3D hand landmarks
-- Hand gesture classification
-- Gesture stabilization
-- Meme selection based on detected gesture
-- Separate meme display window
-- Separate camera frame display
-- Optional debug landmark rendering pipeline
-- Face detection pipeline prepared for future expression recognition
+Gesture Reactor watches the webcam feed and recognizes selected hand gestures and facial expressions in real time.
+
+When a supported gesture or expression becomes stable, the application selects a matching meme and displays it in a separate window.
+
+It can also react to combinations of a gesture and facial expression, for example:
+
+- `PEACE + SMILE`
+- `FIST + FROWN`
+- `POINTING + SURPRISED`
+
+The detections are stabilized before they are used, which helps prevent reactions caused by single incorrect or unstable frames.
 
 ## Supported hand gestures
-
-Currently recognized gestures:
 
 - `FIST`
 - `OPEN_PALM`
 - `POINTING`
 - `PEACE`
 
-Unsupported or ambiguous hand poses fall back to `UNKNOWN`.
+Unrecognized hand poses are treated as `UNKNOWN` and are not sent to the meme reaction layer.
 
-## Architecture
+## Supported facial expressions
 
-The application is split into a continuous video stream and asynchronous reaction flows.
+- `SMILE`
+- `FROWN`
+- `EYES_CLOSED`
+- `SURPRISED`
+- `NEUTRAL`
 
-```text
-Camera
-  ↓
-VisionProcessor
-  ↓
-VisionDetectionPipeline
-  ├── HandLandmarkerResult
-  │          ↓
-  │   HandReactionPipeline
-  │          ↓
-  │       Gesture
-  │          ↓
-  │     MemeReactor
-  │          ↓
-  │      MemeDisplay
-  │
-  └── FaceLandmarkerResult
-             ↓
-      FaceReactionPipeline
-             ↓
-        face detection
-        (expressions later)
+`NEUTRAL` is used as a normal face state and does not trigger a meme by itself.
 
-VisionDetectionPipeline
-  ↓
-DebugRenderPipeline
-  ↓
-FrameDisplay
-```
+## How it works
 
-### Detection
+The program continuously reads frames from the webcam and prepares them for MediaPipe.
 
-`VisionDetectionPipeline` submits the same prepared MediaPipe image to both hand and face landmarkers.
+Each frame is processed by both the hand and face landmarkers. Their results are interpreted separately:
 
-Each landmarker runs asynchronously and produces results independently. The pipeline does not wait for hand and face results to share the same timestamp.
+- hand landmarks are analyzed to determine finger states and classify a gesture,
+- face blendshapes are analyzed to classify a facial expression.
 
-### Async processing
+The detected values are then stabilized across multiple results so that short recognition errors do not immediately trigger a reaction.
 
-`AsyncLandmarkProcessor` contains the common asynchronous MediaPipe mechanics:
+Once a stable gesture or expression is available, `MemeReactor` checks whether it can form a supported hand-and-face combination. A matching combination has priority over a reaction to only the hand gesture or only the facial expression.
 
-- `detect_async()` submission
-- result callback handling
-- latest-result queue
-- non-blocking result polling
-- landmarker lifecycle management
+The selected meme is displayed in a separate OpenCV window while the webcam feed remains visible.
 
-The processor is generic and does not contain hand- or face-specific interpretation logic.
+## Reaction examples
 
-### Hand reaction flow
+| Input | Reaction |
+| --- | --- |
+| `PEACE` | Meme assigned to the peace gesture |
+| `SMILE` | Meme assigned to a smile |
+| `PEACE + SMILE` | Dedicated combined meme |
+| `FIST + FROWN` | Dedicated combined meme |
+| `POINTING + SURPRISED` | Dedicated combined meme |
 
-Raw `HandLandmarkerResult` data remains inside the hand-specific part of the application:
-
-```text
-HandLandmarkerResult
-  ↓
-HandPoseAnalyzer
-  ↓
-HandGestureClassifier
-  ↓
-HandGestureStabilizer
-  ↓
-Gesture
-```
-
-Only the resulting `Gesture` is passed to the shared reaction layer.
-
-### Face reaction flow
-
-Face detection already runs alongside hand detection.
-
-At the moment, `FaceReactionPipeline` only handles face detection for development purposes. Expression analysis and classification are planned for a later version.
-
-Raw `FaceLandmarkerResult` data is intended to stay inside the face-specific pipeline, just like hand landmark results stay inside the hand pipeline.
-
-### Debug rendering
-
-Landmark drawing is development-only functionality.
-
-Detection results are dispatched to the debug renderer, which stores the latest available result. The video stream remains independent:
-
-```text
-new detection result
-  ↓
-update latest debug result
-
-current frame
-  ↓
-draw latest available landmarks
-  ↓
-FrameDisplay
-```
-
-This avoids forcing exact frame/result synchronization and keeps debug visualization separate from the actual gesture reaction logic.
+Meme paths can be changed or extended directly in the reaction configuration.
 
 ## Tech stack
 
 - Python 3.14
-- OpenCV
 - MediaPipe Tasks
+- OpenCV 5
 - NumPy
 - mypy
 - Black
 - Flake8
+- isort
 
 ## Models
 
-The project uses MediaPipe Task model bundles stored locally:
+The project uses MediaPipe Task model bundles:
 
 ```text
 models/
@@ -158,9 +91,19 @@ models/
 └── face_landmarker.task
 ```
 
+Make sure both model files are present before running the application.
+
 ## Meme assets
 
-Meme files are grouped by reaction:
+Meme files are stored under:
+
+```text
+assets/memes/
+```
+
+They can be grouped by gesture, expression, or combined reaction.
+
+Example:
 
 ```text
 assets/
@@ -168,12 +111,21 @@ assets/
     ├── fist/
     ├── open_palm/
     ├── peace/
-    └── pointing/
+    ├── pointing/
+    ├── expression/
+    └── combo/
+        ├── peace_smile/
+        ├── fist_frown/
+        └── pointing_surprised/
 ```
 
-`MemeReactor` selects the appropriate meme path for a recognized gesture and passes it to `MemeDisplay`.
+## Requirements
 
-## Setup
+- Python `>=3.14,<3.15`
+- Working webcam
+- MediaPipe model files in the `models/` directory
+
+## Installation
 
 Create and activate a virtual environment:
 
@@ -182,13 +134,17 @@ python -m venv .venv
 source .venv/bin/activate
 ```
 
-Install dependencies:
+Install runtime dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Make sure the required MediaPipe model files are available in the `models/` directory.
+For development dependencies:
+
+```bash
+pip install -r requirements-dev.txt
+```
 
 ## Run
 
@@ -198,46 +154,42 @@ From the project root:
 python src/main.py
 ```
 
-The application will open the webcam stream and a separate meme display window.
+The application opens the webcam feed and displays memes in a separate window when a supported reaction is detected.
 
-## Roadmap
+Press:
 
-Planned next steps include:
+```text
+q
+```
 
-- Face expression analysis
-- Face expression classification
-- Expression stabilization
-- Meme reactions triggered by facial expressions
-- Shared reaction handling for gestures and expressions
-- Further gesture-recognition tuning
-- Improved robustness for occlusion and ambiguous finger poses
-- Optional performance and latency metrics for development mode
+in the webcam window to stop the application.
 
-## Version history
+## Development checks
 
-### v0.2.0
+Type checking:
 
-- Added Face Landmarker
-- Added parallel hand and face detection
-- Added generic asynchronous landmark processor
-- Added `VisionDetectionPipeline`
-- Refactored hand processing into event-driven result dispatch
-- Separated raw MediaPipe results from shared reaction logic
-- Added development-oriented debug rendering flow
-- Preserved working gesture-to-meme reactions after the architecture refactor
+```bash
+mypy .
+```
 
-### v0.1.0
+Formatting:
 
-First working hand-gesture MVP:
+```bash
+black .
+```
 
-- Webcam input
-- Hand landmark detection
-- Hand pose analysis
-- Gesture classification
-- Gesture stabilization
-- Meme reactions
-- Separate meme and camera displays
+Import sorting:
 
-## Status
+```bash
+isort .
+```
 
-Gesture Reactor is an experimental learning project and is still under active development.
+Linting:
+
+```bash
+flake8 .
+```
+
+## License
+
+This project is licensed under the MIT License.
