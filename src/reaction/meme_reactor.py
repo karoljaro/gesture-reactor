@@ -3,7 +3,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from vision.face.types.expression import Expression
-from vision.hand.types.gesture import Gesture
+from vision.types import Gesture
 
 type ReactionKey = Gesture | Expression | tuple[Gesture, Expression]
 
@@ -11,10 +11,10 @@ type MemeHandler = Callable[[Path], None]
 
 
 GESTURE_MEMES: dict[Gesture, tuple[str, ...]] = {
-    Gesture.FIST: ("assets/memes/fist/fist.jpg",),
-    Gesture.OPEN_PALM: ("assets/memes/open_palm/openpalm.webp",),
-    Gesture.PEACE: ("assets/memes/peace/peace.jpg",),
-    Gesture.POINTING: ("assets/memes/pointing/pointing.jpg",),
+    "FIST": ("assets/memes/fist/fist.jpg",),
+    "OPEN_PALM": ("assets/memes/open_palm/openpalm.webp",),
+    "PEACE": ("assets/memes/peace/peace.jpg",),
+    "POINTING": ("assets/memes/pointing/pointing.jpg",),
 }
 
 EXPRESSION_MEMES: dict[Expression, tuple[str, ...]] = {
@@ -33,11 +33,9 @@ def _combo(
 
 
 COMBINED_MEMES: dict[tuple[Gesture, Expression], tuple[str, ...]] = {
-    _combo(Gesture.PEACE, Expression.SMILE): ("assets/memes/combo/peace_smile/first.png",),
-    _combo(Gesture.FIST, Expression.FROWN): ("assets/memes/combo/fist_frown/first.png",),
-    _combo(Gesture.POINTING, Expression.SURPRISED): (
-        "assets/memes/combo/pointing_surprised/first.png",
-    ),
+    _combo("PEACE", Expression.SMILE): ("assets/memes/combo/peace_smile/first.png",),
+    _combo("FIST", Expression.FROWN): ("assets/memes/combo/fist_frown/first.png",),
+    _combo("POINTING", Expression.SURPRISED): ("assets/memes/combo/pointing_surprised/first.png",),
 }
 
 
