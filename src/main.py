@@ -26,7 +26,9 @@ def main() -> None:
         on_gesture=meme_reactor.handle_gesture
     )
 
-    face_pipeline = FaceReactionPipeline()
+    face_pipeline = FaceReactionPipeline(
+        on_expression=meme_reactor.handle_expression
+    )
 
     debug_render_pipelne = DebugRenderPipeline[
         HandLandmarkerResult

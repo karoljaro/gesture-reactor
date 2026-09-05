@@ -2,6 +2,7 @@ import random
 from collections.abc import Callable
 from vision.types import Gesture
 from pathlib import Path
+from vision.face.types.expression import Expression
 
 GESTURE_MEMES: dict[Gesture, tuple[str, ...]] = {
     "FIST": ("assets/memes/fist/fist.jpg",),
@@ -29,6 +30,13 @@ class MemeReactor:
 
         if meme_path is not None:
             self._on_meme(meme_path)
+
+    def handle_expression(
+        self,
+        expression: Expression,
+        _timestamp_ms: int
+    ) -> None:
+        print(expression)
 
     def _get_meme_path(self, gesture: Gesture) -> Path | None:
         if gesture is None or gesture not in GESTURE_MEMES:
