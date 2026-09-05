@@ -18,7 +18,11 @@ SURPRISED_THRESHOLDS = {
 
 
 class FaceExpressionClassifier:
-    def classify(self, blendshapes: FaceBlendshapeScores) -> Expression:
+    def classify(self, blendshapes: FaceBlendshapeScores | None) -> Expression | None:
+
+        if blendshapes is None:
+            return None
+
         scores = FaceExpressionScores(
             smile=min(
                 blendshapes["mouth_smile_left"],
