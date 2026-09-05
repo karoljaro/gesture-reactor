@@ -20,10 +20,24 @@ EXPRESSION_MEMES: dict[Expression, tuple[str, ...]] = {
     Expression.SURPRISED: ("assets/memes/expression/surprised.jpg",),
 }
 
+
+def _combo(
+    gesture: Gesture,
+    expression: Expression,
+) -> tuple[Gesture, Expression]:
+    return gesture, expression
+
+
 COMBINED_MEMES: dict[tuple[Gesture, Expression], tuple[str, ...]] = {
-    # (Gesture.PEACE, Expression.SMILE): (
-    #     "assets/memes/combined/peace_smile.jpg",
-    # ),
+    _combo(Gesture.PEACE, Expression.SMILE): (
+        "assets/memes/combo/peace_smile/first.png",
+    ),
+    _combo(Gesture.FIST, Expression.FROWN): (
+        "assets/memes/combo/fist_frown/first.png",
+    ),
+    _combo(Gesture.POINTING, Expression.SURPRISED): (
+        "assets/memes/combo/pointing_surprised/first.png",
+    ),
 }
 
 
