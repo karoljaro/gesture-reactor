@@ -11,9 +11,8 @@ FROWN_THRESHOLD = {
 EYES_CLOSED_THRESHOLD = 0.50
 
 SURPRISED_THRESHOLDS = {
-    "eyes_wide": 0.02,
-    "brows_up": 0.68,
-    "mouth_open": 0.70,
+    "brows_up": 0.65,
+    "mouth_open": 0.65,
 }
 
 
@@ -63,8 +62,7 @@ class FaceExpressionClassifier:
             return Expression.EYES_CLOSED
 
         if (
-            scores.eyes_wide >= SURPRISED_THRESHOLDS["eyes_wide"]
-            and scores.brows_up >= SURPRISED_THRESHOLDS["brows_up"]
+            scores.brows_up >= SURPRISED_THRESHOLDS["brows_up"]
             and scores.mouth_open >= SURPRISED_THRESHOLDS["mouth_open"]
         ):
             return Expression.SURPRISED
