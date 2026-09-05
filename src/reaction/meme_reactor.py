@@ -5,6 +5,10 @@ from pathlib import Path
 from vision.face.types.expression import Expression
 from vision.hand.types.gesture import Gesture
 
+type ReactionKey = Gesture | Expression | tuple[Gesture, Expression]
+
+type MemeHandler = Callable[[Path], None]
+
 
 GESTURE_MEMES: dict[Gesture, tuple[str, ...]] = {
     Gesture.FIST: ("assets/memes/fist/fist.jpg",),
@@ -29,12 +33,8 @@ def _combo(
 
 
 COMBINED_MEMES: dict[tuple[Gesture, Expression], tuple[str, ...]] = {
-    _combo(Gesture.PEACE, Expression.SMILE): (
-        "assets/memes/combo/peace_smile/first.png",
-    ),
-    _combo(Gesture.FIST, Expression.FROWN): (
-        "assets/memes/combo/fist_frown/first.png",
-    ),
+    _combo(Gesture.PEACE, Expression.SMILE): ("assets/memes/combo/peace_smile/first.png",),
+    _combo(Gesture.FIST, Expression.FROWN): ("assets/memes/combo/fist_frown/first.png",),
     _combo(Gesture.POINTING, Expression.SURPRISED): (
         "assets/memes/combo/pointing_surprised/first.png",
     ),
@@ -43,15 +43,19 @@ COMBINED_MEMES: dict[tuple[Gesture, Expression], tuple[str, ...]] = {
 
 class MemeReactor:
     COMBINATION_MAX_AGE_MS = 800
+    REACTION_COOLDOWN_MS = 800
 
     def __init__(
         self,
-        on_meme: Callable[[Path], None],
+        on_meme: MemeHandler,
     ) -> None:
         self._on_meme = on_meme
 
         self._latest_gesture: tuple[Gesture, int] | None = None
         self._latest_expression: tuple[Expression, int] | None = None
+
+        self._last_reaction: ReactionKey | None = None
+        self._last_reaction_timestamp: int = -1
 
     def handle_gesture(
         self,
@@ -63,10 +67,20 @@ class MemeReactor:
         expression = self._get_fresh_expression(timestamp_ms)
 
         if expression is not None:
-            if self._emit(COMBINED_MEMES.get((gesture, expression))):
+            combo = _combo(gesture, expression)
+
+            if self._emit(
+                combo,
+                COMBINED_MEMES.get(combo),
+                timestamp_ms,
+            ):
                 return
 
-        self._emit(GESTURE_MEMES.get(gesture))
+        self._emit(
+            gesture,
+            GESTURE_MEMES.get(gesture),
+            timestamp_ms,
+        )
 
     def handle_expression(
         self,
@@ -81,10 +95,20 @@ class MemeReactor:
         gesture = self._get_fresh_gesture(timestamp_ms)
 
         if gesture is not None:
-            if self._emit(COMBINED_MEMES.get((gesture, expression))):
+            combo = _combo(gesture, expression)
+
+            if self._emit(
+                combo,
+                COMBINED_MEMES.get(combo),
+                timestamp_ms,
+            ):
                 return
 
-        self._emit(EXPRESSION_MEMES.get(expression))
+        self._emit(
+            expression,
+            EXPRESSION_MEMES.get(expression),
+            timestamp_ms,
+        )
 
     def _get_fresh_gesture(
         self,
@@ -119,10 +143,23 @@ class MemeReactor:
 
     def _emit(
         self,
-        memes: tuple[str, ...] | None,
+        reaction: ReactionKey,
+        meme_paths: tuple[str, ...] | None,
+        timestamp_ms: int,
     ) -> bool:
-        if not memes:
+        if not meme_paths:
             return False
 
-        self._on_meme(Path(random.choice(memes)))
+        if (
+            reaction == self._last_reaction
+            and timestamp_ms - self._last_reaction_timestamp < self.REACTION_COOLDOWN_MS
+        ):
+            self._last_reaction_timestamp = timestamp_ms
+            return True
+
+        self._last_reaction = reaction
+        self._last_reaction_timestamp = timestamp_ms
+
+        self._on_meme(Path(random.choice(meme_paths)))
+
         return True
